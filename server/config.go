@@ -11,6 +11,24 @@ type Config struct {
 	Port *string `json:"port"`
 }
 
+func getConfig(overrides *Config) Config {
+	defaultPort := "8080"
+
+	c := Config{
+		Port: &defaultPort,
+	}
+
+	if overrides == nil {
+		return c
+	}
+
+	if overrides.Port != nil {
+		c.Port = overrides.Port
+	}
+
+	return c
+}
+
 func ReadJSONFile(filename string) (*Config, error) {
 	jsonFile, err := os.Open(filename)
 	if err != nil {
