@@ -8,12 +8,17 @@ import (
 	"net"
 )
 
+type Config struct {
+	Port *string `json:"port"`
+}
+
 type store[K comparable, V any] interface {
 	Get(key K) (V, bool)
 	Set(key K, val V)
 }
 
 type Server[K comparable, V any] struct {
+	cfg       Config
 	container store[K, V]
 }
 
@@ -24,17 +29,35 @@ const (
 	Set Action = "SET"
 )
 
-func NewServer[K comparable, V any](c store[K, V]) *Server[K, V] {
-	return &Server[K, V]{container: c}
+func NewServer[K comparable, V any](cfg *Config, c store[K, V]) *Server[K, V] {
+	return &Server[K, V]{cfg: getConfig(cfg), container: c}
+}
+
+func getConfig(overrides *Config) Config {
+	defaultPort := "8080"
+
+	c := Config{
+		Port: &defaultPort,
+	}
+
+	if overrides == nil {
+		return c
+	}
+
+	if overrides.Port != nil {
+		c.Port = overrides.Port
+	}
+
+	return c
 }
 
 func (s *Server[K, V]) Run() {
-	listener, err := net.Listen("tcp", ":8080")
+	listener, err := net.Listen("tcp", ":"+*s.cfg.Port)
 	if err != nil {
 		log.Fatalln("unable to start tcp server")
 	}
 
-	log.Println("TCP server listening on port :8080...")
+	log.Println("TCP server listening on port :" + *s.cfg.Port)
 
 	defer listener.Close()
 
