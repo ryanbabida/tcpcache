@@ -8,10 +8,6 @@ import (
 	"net"
 )
 
-type Config struct {
-	Port *string `json:"port"`
-}
-
 type store[K comparable, V any] interface {
 	Get(key K) (V, bool)
 	Set(key K, val V)
