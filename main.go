@@ -21,10 +21,16 @@ func main() {
 		log.Fatalln("failed to initialize cache")
 	}
 
+	opts := []func(*server.Config){}
+
 	port := flag.String("port", "", "listening address for server")
 	flag.Parse()
 
-	cfg := server.NewConfig(server.WithPort(*port))
+	if len(*port) > 0 {
+		opts = append(opts, server.WithPort(*port))
+	}
+
+	cfg := server.NewConfig(opts...)
 	s := server.NewServer(c, *cfg)
 	s.Run()
 }

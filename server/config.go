@@ -13,12 +13,15 @@ type Config struct {
 
 func WithPort(p string) func(*Config) {
 	return func(c *Config) {
-		c.Port = &p
+		if len(p) > 0 {
+			c.Port = &p
+		}
 	}
 }
 
 func NewConfig(opts ...func(*Config)) *Config {
-	c := &Config{}
+	defaultPort := "8080"
+	c := &Config{Port: &defaultPort}
 	for _, o := range opts {
 		o(c)
 	}
