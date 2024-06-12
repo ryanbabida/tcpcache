@@ -11,49 +11,46 @@ type Config struct {
 	Port *string `json:"port"`
 }
 
-func getConfig(overrides *Config) Config {
-	defaultPort := "8080"
-
-	c := Config{
-		Port: &defaultPort,
+func WithPort(p string) func(*Config) {
+	return func(c *Config) {
+		c.Port = &p
 	}
+}
 
-	if overrides == nil {
-		return c
-	}
-
-	if overrides.Port != nil {
-		c.Port = overrides.Port
+func NewConfig(opts ...func(*Config)) *Config {
+	c := &Config{}
+	for _, o := range opts {
+		o(c)
 	}
 
 	return c
 }
 
-func ReadJSONFile(filename string) (*Config, error) {
+func ReadJSONFile(filename string) (Config, error) {
 	jsonFile, err := os.Open(filename)
 	if err != nil {
-		return nil, fmt.Errorf("unable to open filename '%s': %w", filename, err)
+		return Config{}, fmt.Errorf("unable to open filename '%s': %w", filename, err)
 	}
 
 	c, err := readJSONFile(jsonFile)
 	if err != nil {
-		return nil, fmt.Errorf("unable to read JSON file: %w", err)
+		return Config{}, fmt.Errorf("unable to read JSON file: %w", err)
 	}
 
 	return c, nil
 }
 
-func readJSONFile(r io.Reader) (*Config, error) {
+func readJSONFile(r io.Reader) (Config, error) {
 	b, err := io.ReadAll(r)
 	if err != nil {
-		return nil, fmt.Errorf("unable to read file: %w", err)
+		return Config{}, fmt.Errorf("unable to read file: %w", err)
 	}
 
 	var c Config
 	err = json.Unmarshal(b, &c)
 	if err != nil {
-		return nil, fmt.Errorf("unable to parse json file: %w", err)
+		return Config{}, fmt.Errorf("unable to parse json file: %w", err)
 	}
 
-	return &c, nil
+	return c, nil
 }

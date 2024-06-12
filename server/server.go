@@ -25,8 +25,8 @@ const (
 	Set Action = "SET"
 )
 
-func NewServer[K comparable, V any](cfg *Config, c store[K, V]) *Server[K, V] {
-	return &Server[K, V]{cfg: getConfig(cfg), container: c}
+func NewServer[K comparable, V any](c store[K, V], cfg Config) *Server[K, V] {
+	return &Server[K, V]{container: c, cfg: cfg}
 }
 
 func (s *Server[K, V]) Run() {

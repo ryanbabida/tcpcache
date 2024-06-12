@@ -1,6 +1,7 @@
 package main
 
 import (
+	"flag"
 	"hash/fnv"
 	"log"
 
@@ -20,11 +21,10 @@ func main() {
 		log.Fatalln("failed to initialize cache")
 	}
 
-	cfg, err := server.ReadJSONFile("settings.json")
-	if err != nil {
-		log.Println("unable to read JSON config file, will use default config instead: %w", err)
-	}
+	port := flag.String("port", "", "listening address for server")
+	flag.Parse()
 
-	s := server.NewServer(cfg, c)
+	cfg := server.NewConfig(server.WithPort(*port))
+	s := server.NewServer(c, *cfg)
 	s.Run()
 }
