@@ -7,6 +7,10 @@ import (
 	"os"
 )
 
+const (
+	defaultPort = "8080"
+)
+
 type Config struct {
 	Port *string `json:"port"`
 }
@@ -20,8 +24,8 @@ func WithPort(p string) func(*Config) {
 }
 
 func NewConfig(opts ...func(*Config)) *Config {
-	defaultPort := "8080"
-	c := &Config{Port: &defaultPort}
+	p := defaultPort
+	c := &Config{Port: &p}
 	for _, o := range opts {
 		o(c)
 	}
