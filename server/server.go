@@ -18,13 +18,6 @@ type Server[K comparable, V any] struct {
 	container store[K, V]
 }
 
-type Action string
-
-const (
-	Get Action = "GET"
-	Set Action = "SET"
-)
-
 func NewServer[K comparable, V any](c store[K, V], cfg Config) *Server[K, V] {
 	return &Server[K, V]{container: c, cfg: cfg}
 }

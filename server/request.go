@@ -9,11 +9,8 @@ type request[K comparable, V any] struct {
 }
 
 func (r *request[K, V]) isValid() error {
-	switch r.Action {
-	case Get, Set:
-		break
-	default:
-		return fmt.Errorf("invalid action '%s' passed in", r.Action)
+	if err := r.Action.IsValid(); err != nil {
+		return fmt.Errorf("invalid request with bad action: %v", err)
 	}
 
 	if r.Key == nil {
