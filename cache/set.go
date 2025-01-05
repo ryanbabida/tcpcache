@@ -7,7 +7,7 @@ type set[K comparable, V any] struct {
 	mutex     sync.RWMutex
 }
 
-func NewSet[K comparable, V any]() *set[K, V] {
+func newSet[K comparable, V any]() *set[K, V] {
 	return &set[K, V]{
 		container: map[K]V{},
 		mutex:     sync.RWMutex{},

@@ -18,7 +18,7 @@ func NewCache[K comparable, V any](setCount int, hash func(key K) int) (*cache[K
 	}
 
 	for i := 0; i < setCount; i++ {
-		c.sets = append(c.sets, NewSet[K, V]())
+		c.sets = append(c.sets, newSet[K, V]())
 	}
 
 	return &c, nil
