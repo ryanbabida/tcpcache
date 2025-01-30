@@ -5,7 +5,9 @@ import (
 	"encoding/json"
 	"fmt"
 	"log"
+	"log/slog"
 	"net"
+	"os"
 )
 
 type store[K comparable, V any] interface {
@@ -16,26 +18,31 @@ type store[K comparable, V any] interface {
 type Server[K comparable, V any] struct {
 	cfg       Config
 	container store[K, V]
+	logger    *slog.Logger
 }
 
 func NewServer[K comparable, V any](c store[K, V], cfg Config) *Server[K, V] {
-	return &Server[K, V]{container: c, cfg: cfg}
+	return &Server[K, V]{
+		container: c,
+		cfg:       cfg,
+		logger:    slog.New(slog.NewJSONHandler(os.Stdout, nil))}
 }
 
 func (s *Server[K, V]) Run() {
 	listener, err := net.Listen("tcp", ":"+*s.cfg.Port)
 	if err != nil {
-		log.Fatalln("unable to start tcp server")
+		s.logger.Error("unable to start tcp server")
+		os.Exit(1)
 	}
 
-	log.Println("TCP server listening on port :" + *s.cfg.Port)
+	s.logger.Info("TCP server listening on port :" + *s.cfg.Port)
 
 	defer listener.Close()
 
 	for {
 		conn, err := listener.Accept()
 		if err != nil {
-			log.Println("failed to accept request: %w", err)
+			s.logger.Error("failed to accept request", "error", err)
 		}
 
 		go s.HandleRequest(conn)
@@ -47,7 +54,7 @@ func (s *Server[K, V]) HandleRequest(conn net.Conn) {
 	for {
 		message, err := reader.ReadBytes('\n')
 		if err != nil {
-			log.Println("unable to read message")
+			s.logger.Error("unable to read message")
 			conn.Write([]byte("unable to read message\n"))
 			continue
 		}
@@ -55,21 +62,21 @@ func (s *Server[K, V]) HandleRequest(conn net.Conn) {
 		var r request[K, V]
 		err = json.Unmarshal(message, &r)
 		if err != nil {
-			log.Println("unable to parse request")
+			s.logger.Error("unable to parse request")
 			conn.Write([]byte("unable to parse request\n"))
 			continue
 		}
 
 		err = r.isValid()
 		if err != nil {
-			log.Printf("invalid request: %v", err)
+			s.logger.Error("invalid request", "error", err)
 			conn.Write([]byte("invalid request\n"))
 			continue
 		}
 
 		err = s.ExecuteAction(&r, conn)
 		if err != nil {
-			log.Printf("failed to execute action: %v", err)
+			s.logger.Error("failed to execute action", "error", err)
 			conn.Write([]byte("failed to execute action\n"))
 			continue
 		}
