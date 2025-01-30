@@ -30,7 +30,6 @@ func main() {
 		opts = append(opts, server.WithPort(*port))
 	}
 
-	cfg := server.NewConfig(opts...)
-	s := server.NewServer(c, *cfg)
+	s := server.NewServer(c, opts...)
 	s.Run()
 }

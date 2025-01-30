@@ -21,11 +21,17 @@ type Server[K comparable, V any] struct {
 	logger    *slog.Logger
 }
 
-func NewServer[K comparable, V any](c store[K, V], cfg Config) *Server[K, V] {
+func NewServer[K comparable, V any](c store[K, V], opts ...func(*Config)) *Server[K, V] {
+	logger := slog.New(slog.NewJSONHandler(os.Stdout, nil))
+
+	cfg := NewConfig(opts...)
+	logger.Info("generated config", slog.Any("config", cfg))
+
 	return &Server[K, V]{
 		container: c,
-		cfg:       cfg,
-		logger:    slog.New(slog.NewJSONHandler(os.Stdout, nil))}
+		cfg:       *cfg,
+		logger:    logger,
+	}
 }
 
 func (s *Server[K, V]) Run() {
@@ -62,21 +68,21 @@ func (s *Server[K, V]) HandleRequest(conn net.Conn) {
 		var r request[K, V]
 		err = json.Unmarshal(message, &r)
 		if err != nil {
-			s.logger.Error("unable to parse request")
+			s.logger.Error("unable to parse request", "message", message)
 			conn.Write([]byte("unable to parse request\n"))
 			continue
 		}
 
 		err = r.isValid()
 		if err != nil {
-			s.logger.Error("invalid request", "error", err)
+			s.logger.Error("invalid request", "error", err, slog.Any("request", r))
 			conn.Write([]byte("invalid request\n"))
 			continue
 		}
 
 		err = s.ExecuteAction(&r, conn)
 		if err != nil {
-			s.logger.Error("failed to execute action", "error", err)
+			s.logger.Error("failed to execute action", "error", err, slog.Any("request", r))
 			conn.Write([]byte("failed to execute action\n"))
 			continue
 		}
