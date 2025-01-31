@@ -5,8 +5,8 @@ import (
 	"hash/fnv"
 	"log"
 
-	"github.com/ryanbabida/tcpcache/cache"
-	"github.com/ryanbabida/tcpcache/server"
+	"github.com/ryanbabida/tcpcache/internal/cache"
+	"github.com/ryanbabida/tcpcache/internal/server"
 )
 
 func main() {
@@ -31,5 +31,5 @@ func main() {
 	}
 
 	s := server.NewServer(c, opts...)
-	s.Run()
+	s.Start()
 }

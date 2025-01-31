@@ -34,7 +34,7 @@ func NewServer[K comparable, V any](c store[K, V], opts ...func(*Config)) *Serve
 	}
 }
 
-func (s *Server[K, V]) Run() {
+func (s *Server[K, V]) Start() {
 	listener, err := net.Listen("tcp", ":"+*s.cfg.Port)
 	if err != nil {
 		s.logger.Error("unable to start tcp server")
